@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ValueConversion.Ef6</name>
+    </assembly>
+    <members>
+        <member name="T:ValueConversion.Ef6.MaterializedTypesVisitor">
+            <summary>
+            A visitor that goes through a query expression and finds all types used in the query.
+            </summary>
+        </member>
+        <member name="P:ValueConversion.Ef6.MaterializedTypesVisitor.MaterializedTypes">
+            <summary>
+            Gets the list of types used in the materialization.
+            </summary>
+        </member>
+    </members>
+</doc>
