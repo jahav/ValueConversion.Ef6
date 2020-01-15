@@ -1,6 +1,6 @@
 ﻿namespace ValueConversion.Tests
 {
-    internal class Address
+    public class Address
     {
         public Address()
         {

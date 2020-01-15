@@ -15,5 +15,11 @@
         /// Gets the list of types used in the materialization.
         /// </summary>
         public IReadOnlyCollection<Type> MaterializedTypes => _materializedTypes;
+
+        protected override Expression VisitNew(NewExpression node)
+        {
+            _materializedTypes.Add(node.Type);
+            return base.VisitNew(node);
+        }
     }
 }

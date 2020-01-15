@@ -71,6 +71,9 @@
     <Compile Include="Customer.cs" />
     <Compile Include="CustomerEntity.cs" />
     <Compile Include="Id.cs" />
+    <Compile Include="Contact.cs" />
+    <Compile Include="PhoneNumber.cs" />
+    <Compile Include="PhoneNumberEntity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
