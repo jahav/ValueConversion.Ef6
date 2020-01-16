@@ -10,6 +10,7 @@
     public class MaterializedTypesVisitor : ExpressionVisitor
     {
         private readonly HashSet<Type> _materializedTypes = new HashSet<Type>();
+        private readonly CastMap _castMap = new CastMap();
 
         /// <summary>
         /// Gets the list of types used in the materialization.
@@ -20,6 +21,16 @@
         {
             _materializedTypes.Add(node.Type);
             return base.VisitNew(node);
+        }
+
+        protected override Expression VisitUnary(UnaryExpression node)
+        {
+            if (node.NodeType == ExpressionType.ConvertChecked || node.NodeType == ExpressionType.Convert)
+            {
+                _castMap.AddFromTo(node.Operand.Type, node.Type);
+            }
+
+            return base.VisitUnary(node);
         }
     }
 }
