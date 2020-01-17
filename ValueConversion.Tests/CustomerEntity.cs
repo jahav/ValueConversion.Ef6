@@ -7,5 +7,9 @@
         public int Id { get; set; }
 
         public ICollection<PhoneNumberEntity> PhoneNumbers { get; set; }
+
+        public string WorkCity { get; set; }
+
+        public string WorkStreet { get; set; }
     }
 }

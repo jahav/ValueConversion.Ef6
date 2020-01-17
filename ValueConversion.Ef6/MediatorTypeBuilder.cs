@@ -14,28 +14,36 @@
     /// </summary>
     public class MediatorTypeBuilder
     {
-        private const string AssemblyName = "ValueConversion.Ef6.MediatorAssembly";
+        private const string _assemblyName = "ValueConversion.Ef6.MediatorAssembly";
         private readonly ConversionConfiguration _configuration;
 
-        public MediatorTypeBuilder(IDictionary<Type, Type> convertMap, ConversionConfiguration configuration)
+        /// <summary>
+        /// List of custom typef for member, anything not found here is just passed through without type change.
+        /// </summary>
+        private readonly IReadOnlyDictionary<Type, Type> _typeConverters;
+
+        public MediatorTypeBuilder(IReadOnlyDictionary<Type, Type> typeConverters, ConversionConfiguration configuration)
         {
             _configuration = configuration;
+            _typeConverters = typeConverters.ToDictionary();
         }
 
-        public Type CreateMediatorType(Type domainType)
+        public Type CreateMediatorType(Type targetType)
         {
             // DO NOT MODIFY, UNLESS YOU KNOW WHAT YOU ARE DOING.
             // Based on a TypeBuilder MSDN example, but I am not good at IL.
-            var assemblyName = new AssemblyName(AssemblyName);
+
+            // TODO: Shouldn't create assembly and module for each type, also check that type is not created twice
+            var assemblyName = new AssemblyName(_assemblyName);
             var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndCollect);
             var moduleBuilder = assemblyBuilder.DefineDynamicModule(assemblyName.Name);
 
-            var uniqueName = "Mediators.Anonymous." + domainType.AssemblyQualifiedName;
+            var uniqueName = targetType.FullName + "Proxy";
             var typeBuilder = moduleBuilder.DefineType(uniqueName, TypeAttributes.Public);
 
             DefineDefaultConstructor(typeBuilder);
 
-            var mediatedProperties = domainType.GetProperties().Where(propInfo => _configuration.ShouldMediateTargetProperty(propInfo));
+            var mediatedProperties = targetType.GetProperties().Where(propInfo => _configuration.ShouldMediateTargetProperty(propInfo));
             foreach (var mediatedProperty in mediatedProperties)
             {
                 DefineProperty(typeBuilder, mediatedProperty);

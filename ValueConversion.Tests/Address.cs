@@ -2,8 +2,8 @@
 {
     public class Address
     {
-        public Address()
-        {
-        }
+        public string Street { get; set; }
+
+        public string City { get; set; }
     }
 }

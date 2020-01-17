@@ -31,6 +31,16 @@
             Gets the list of types used in the materialization.
             </summary>
         </member>
+        <member name="F:ValueConversion.Ef6.MediatorMapper._mediatorTypeMaps">
+            <summary>
+            Key is target type.
+            </summary>
+        </member>
+        <member name="M:ValueConversion.Ef6.MediatorMapper.AddMediatorTypeMap(ValueConversion.Ef6.MediatorTypeMap)">
+            <summary>
+            Mutable because we add types as new expressions are translated.
+            </summary>
+        </member>
         <member name="T:ValueConversion.Ef6.MediatorTypeBuilder">
             <summary>
             A builder that creates new anonymous types based on domain entities.
@@ -38,6 +48,23 @@
             will be a primitive type (according to Edm), not domain type (e.g. <c>string</c>
             instead of <c>SerialNumber</c>).
             </summary>
+        </member>
+        <member name="F:ValueConversion.Ef6.MediatorTypeBuilder._typeConverters">
+            <summary>
+            List of custom typef for member, anything not found here is just passed through without type change.
+            </summary>
+        </member>
+        <member name="T:ValueConversion.Ef6.MediatorTypeMap">
+            <summary>
+            A representation of map target - mediator.
+            Inheritance not counted, table per concrete type.
+            </summary>
+        </member>
+        <member name="M:ValueConversion.Ef6.MediatorTypeMap.ConvertToMediator(System.Reflection.PropertyInfo)">
+            <summary>
+            Convert a property of the target type into a property of the mediator type.
+            </summary>
+            <param name="propertyInfo">A property of a target type.</param>
         </member>
     </members>
 </doc>

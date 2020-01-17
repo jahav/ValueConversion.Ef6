@@ -37,6 +37,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ExpressionTreeToString, Version=2.0.15.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ExpressionTreeToString.2.0.15\lib\netstandard2.0\ExpressionTreeToString.dll</HintPath>
+    </Reference>
     <Reference Include="FluentAssertions, Version=5.10.0.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
       <HintPath>..\packages\FluentAssertions.5.10.0\lib\net47\FluentAssertions.dll</HintPath>
     </Reference>
@@ -68,6 +71,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Address.cs" />
+    <Compile Include="SimpleIntegrationTest.cs" />
     <Compile Include="MaterializedTypesVisitorTest.cs" />
     <Compile Include="Customer.cs" />
     <Compile Include="CustomerEntity.cs" />
