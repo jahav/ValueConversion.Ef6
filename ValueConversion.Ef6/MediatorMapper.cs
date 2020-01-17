@@ -31,5 +31,10 @@
 
             return mediatorMap.ConvertToMediator(propertyInfo);
         }
+
+        internal bool IsTargetType(Type targetType)
+        {
+            return _mediatorTypeMaps.ContainsKey(targetType);
+        }
     }
 }

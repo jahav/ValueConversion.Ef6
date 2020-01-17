@@ -41,12 +41,21 @@
         protected override MemberAssignment VisitMemberAssignment(MemberAssignment node)
         {
             // Look for a pattern target.Property = (something)exp; -> mediator.Property = exp
-            if (node.Member.MemberType == MemberTypes.Property
-                && node.Expression is UnaryExpression convertExpression
-                && convertExpression.NodeType == ExpressionType.Convert)
+            if (node.Member.MemberType == MemberTypes.Property && _mapper.IsTargetType(node.Member.ReflectedType))
             {
-                MemberInfo mediatorMemberInfo = _mapper.ConvertToMediator((PropertyInfo)node.Member);
-                return Expression.Bind(mediatorMemberInfo, convertExpression.Operand);
+                var propertyInfo = (PropertyInfo)node.Member;
+                MemberInfo mediatorProperty = _mapper.ConvertToMediator(propertyInfo);
+
+                // Look for a pattern target.Property = (something)exp; -> mediator.Property = exp
+                if (node.Expression is UnaryExpression convertExpression
+                    && convertExpression.NodeType == ExpressionType.Convert)
+                {
+                    return Expression.Bind(mediatorProperty, convertExpression.Operand);
+                }
+
+                // No cast, so you can use expression directly
+                // TODO: Visit expression
+                return Expression.Bind(mediatorProperty, node.Expression);
             }
 
             return base.VisitMemberAssignment(node);

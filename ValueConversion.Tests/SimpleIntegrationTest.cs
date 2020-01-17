@@ -15,14 +15,30 @@
         [Fact]
         public void ConvertTypeToMediator_WithNoPropertiesWorks()
         {
-            var config = new ConversionConfiguration();
             Expression<Func<CustomerEntity, Address>> identity = customer => new Address();
+            AssertTargetToMediator(identity, "(CustomerEntity customer) => new AddressProxy()", _noCustomConverters);
+        }
+
+        [Fact]
+        public void ConvertTypeToMediator_WithSinglePropertyWorks()
+        {
+            Expression<Func<CustomerEntity, Address>> identity = customer => new Address { Street = customer.WorkStreet };
+            var result =
+@"
+(CustomerEntity customer) => new AddressProxy() {
+    Street = customer.WorkStreet
+}";
+            AssertTargetToMediator(identity, result, _noCustomConverters);
+        }
+
+        private void AssertTargetToMediator(Expression projection, string resultTargetToMediator, IReadOnlyDictionary<Type, Type> convertors)
+        {
+            var config = new ConversionConfiguration();
 
             var materializedTypesVisitor = new MaterializedTypesVisitor();
+            materializedTypesVisitor.Visit(projection);
 
-            materializedTypesVisitor.Visit(identity);
-
-            var mediatorTypeBuilder = new MediatorTypeBuilder(_noCustomConverters, config);
+            var mediatorTypeBuilder = new MediatorTypeBuilder(convertors, config);
 
             var mediatorMapper = new MediatorMapper();
             foreach (var materializedType in materializedTypesVisitor.MaterializedTypes)
@@ -33,8 +49,8 @@
             }
 
             var targetToMediatorVisitor = new TargetToMediatorVisitor(mediatorMapper);
-            var result = targetToMediatorVisitor.Visit(identity);
-            result.ToString("C#").Should().Be("(CustomerEntity customer) => new AddressProxy()");
+            var result = targetToMediatorVisitor.Visit(projection);
+            result.ToString("C#").Should().Be(resultTargetToMediator.Trim());
         }
     }
 }
