@@ -5,71 +5,12 @@
     using System.Linq;
     using System.Reflection;
 
-    public class GraphSearcher
-    {
-        private readonly ConversionConfiguration _configuration;
-
-        public GraphSearcher(ConversionConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
-
-        /// <summary>
-        /// Depth first search.
-        /// </summary>
-        public TargetTypeGraph SearchGraph(Type origin)
-        {
-            var graph = new TargetTypeGraph(origin);
-            if (_configuration.IsAllowedForColumn(origin))
-            {
-                return graph;
-            }
-
-            SearchNode(graph, origin, 0);
-            return graph;
-        }
-
-        private void SearchNode(TargetTypeGraph graph, Type node, int level)
-        {
-            if (level > _configuration.MaxRecursion)
-            {
-                throw new SanityException($"While looking for a connected graph we went over the recursion limit {level}.");
-            }
-
-            if (!graph.AddNode(node))
-            {
-                return;
-            }
-
-            foreach (var property in node.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
-            {
-                var propertyType = property.PropertyType;
-                if (_configuration.IsAllowedForColumn(propertyType))
-                {
-                    graph.AddProperty(node, property);
-                }
-                else
-                if (_configuration.ShouldMediateTargetProperty(property))
-                {
-                    graph.AddEdge(node, property);
-                    SearchNode(graph, propertyType, level + 1);
-                }
-                else
-                {
-                    // ignore
-                }
-            }
-        }
-    }
-
     /// <summary>
     /// This finds the graph, all nodes and edges that must be translated.
     /// It doesn't do the translation, it only finds what must be translated.
     /// </summary>
     public class TargetTypeGraph
     {
-        private readonly Type _origin;
-
         /// <summary>
         /// Key is node, represented by type, value are directed graphs edges (name of member and type target).
         /// Nodes should be translated. Edges can point either to a node or a <see cref="_keep"/>.
@@ -86,16 +27,12 @@
         private IReadOnlyCollection<Node>? _nodes;
         private IReadOnlyCollection<Edge>? _edges;
 
-        public TargetTypeGraph(Type origin)
-        {
-            _origin = origin;
-        }
-
         public IReadOnlyCollection<Node> Nodes =>
-            _nodes ?? (_nodes = _graph.Select(x => new Node(x.Key, x.Value.Values.Where(e => _keep.Contains(e)))).ToList().AsReadOnly());
+            _nodes ?? (_nodes = _graph.Select(x => new Node(x.Key, x.Value.Where(e => _keep.Contains(e.Value)).Select(x => x.Key))).ToList().AsReadOnly());
 
-        public IReadOnlyCollection<Edge> Edges => 
-            _edges ?? (_edges = 
+        // This only returns an edges between nodes, not column properties.
+        public IReadOnlyCollection<Edge> Edges =>
+            _edges ?? (_edges =
             _graph.SelectMany(node => node.Value.Select(to => new { From = node.Key, To = to.Value, Member = to.Key }))
                     .Where(x => !_keep.Contains(x.To))
                     .Select(x => new Edge(
@@ -141,15 +78,15 @@
 
         public class Node
         {
-            internal Node(Type type, IEnumerable<Type> columnPropertie)
+            internal Node(Type type, IEnumerable<MemberInfo> columnMembers)
             {
                 Type = type;
-                ColumnProperties = columnPropertie.ToList().AsReadOnly();
+                ColumnMembers = columnMembers.ToList().AsReadOnly();
             }
 
             public Type Type { get; }
 
-            public IReadOnlyCollection<Type> ColumnProperties { get; }
+            public IReadOnlyCollection<MemberInfo> ColumnMembers { get; }
         }
 
         public class Edge

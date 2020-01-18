@@ -1,7 +1,6 @@
 ﻿namespace ValueConversion.Ef6
 {
     using System;
-    using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
 

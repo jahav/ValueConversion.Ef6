@@ -1,7 +1,6 @@
 ﻿namespace ValueConversion.Tests
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq.Expressions;
     using ExpressionTreeToString;
     using FluentAssertions;
@@ -10,13 +9,11 @@
 
     public class SimpleIntegrationTest
     {
-        private static readonly IReadOnlyDictionary<Type, Type> _noCustomConverters = new Dictionary<Type, Type>();
-
         [Fact]
         public void ConvertTypeToMediator_WithNoPropertiesWorks()
         {
             Expression<Func<CustomerEntity, Address>> identity = customer => new Address();
-            AssertTargetToMediator(identity, "(CustomerEntity customer) => new «Address»()", _noCustomConverters);
+            AssertTargetToMediator(identity, "(CustomerEntity customer) => new «Address»()");
         }
 
         [Fact]
@@ -28,7 +25,7 @@
 (CustomerEntity customer) => new «Address»() {
     Street = customer.WorkStreet
 }";
-            AssertTargetToMediator(identity, result, _noCustomConverters);
+            AssertTargetToMediator(identity, result);
         }
 
         [Fact]
@@ -48,25 +45,21 @@
         Street = customer.WorkStreet
     }
 }";
-            AssertTargetToMediator(nestedTypes, result, _noCustomConverters);
+            AssertTargetToMediator(nestedTypes, result);
         }
 
-        private void AssertTargetToMediator(Expression projection, string resultTargetToMediator, IReadOnlyDictionary<Type, Type> convertors)
+        private void AssertTargetToMediator<TParameter, TResult>(
+            Expression<Func<TParameter, TResult>> projection,
+            string resultTargetToMediator)
         {
-            var config = new ConversionConfiguration();
-
-            var materializedTypesVisitor = new MaterializedTypesVisitor();
-            materializedTypesVisitor.Visit(projection);
-
-            var mediatorTypeBuilder = new MediatorTypeBuilder(convertors, config);
-
-            var mediatorMapper = new MediatorMapper();
-            foreach (var materializedType in materializedTypesVisitor.MaterializedTypes)
+            var config = new ConversionConfiguration()
             {
-                var mediatorType = mediatorTypeBuilder.CreateMediatorType(materializedType);
-                var typeMap = new MediatorTypeMap(materializedType, mediatorType);
-                mediatorMapper.AddMediatorTypeMap(typeMap);
-            }
+                IsAllowedForColumn = x => x.IsValueType || x == typeof(string),
+            };
+            var searcher = new GraphSearcher(config);
+            var graph = searcher.SearchGraph(typeof(TResult));
+
+            var mediatorMapper = new MediatorTypeBuilder().CreateMediatorTypes(graph);
 
             var targetToMediatorVisitor = new TargetToMediatorVisitor(mediatorMapper);
             var result = targetToMediatorVisitor.Visit(projection);

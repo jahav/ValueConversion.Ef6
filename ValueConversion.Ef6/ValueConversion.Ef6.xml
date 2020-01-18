@@ -25,8 +25,13 @@
         </member>
         <member name="P:ValueConversion.Ef6.ConversionConfiguration.MaxRecursion">
             <summary>
-            Gets a recursion limit that detects endless cycles, e.g. when looking for a connected graph to translate.
+            Gets or sets a recursion limit that detects endless cycles, e.g. when looking for a connected graph to translate.
             First level is 0, once level is greater that MaxRecursion, throw.
+            </summary>
+        </member>
+        <member name="M:ValueConversion.Ef6.GraphSearcher.SearchGraph(System.Type)">
+            <summary>
+            Depth first search.
             </summary>
         </member>
         <member name="T:ValueConversion.Ef6.MaterializedTypesVisitor">
@@ -44,22 +49,12 @@
             Key is target type.
             </summary>
         </member>
-        <member name="M:ValueConversion.Ef6.MediatorMapper.AddMediatorTypeMap(ValueConversion.Ef6.MediatorTypeMap)">
-            <summary>
-            Mutable because we add types as new expressions are translated.
-            </summary>
-        </member>
         <member name="T:ValueConversion.Ef6.MediatorTypeBuilder">
             <summary>
             A builder that creates new anonymous types based on domain entities.
             The mediator type will have same properties as EF entity, but their type
             will be a primitive type (according to Edm), not domain type (e.g. <c>string</c>
             instead of <c>SerialNumber</c>).
-            </summary>
-        </member>
-        <member name="F:ValueConversion.Ef6.MediatorTypeBuilder._typeConverters">
-            <summary>
-            List of custom typef for member, anything not found here is just passed through without type change.
             </summary>
         </member>
         <member name="T:ValueConversion.Ef6.MediatorTypeMap">
@@ -73,11 +68,7 @@
             Convert a property of the target type into a property of the mediator type.
             </summary>
             <param name="propertyInfo">A property of a target type.</param>
-        </member>
-        <member name="M:ValueConversion.Ef6.GraphSearcher.SearchGraph(System.Type)">
-            <summary>
-            Depth first search.
-            </summary>
+            <exception cref="T:System.InvalidOperationException">Property is not present on the mediator.</exception>
         </member>
         <member name="T:ValueConversion.Ef6.TargetTypeGraph">
             <summary>

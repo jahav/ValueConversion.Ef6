@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Reflection;
 
     public class MediatorMapper
@@ -9,13 +10,12 @@
         /// <summary>
         /// Key is target type.
         /// </summary>
-        private readonly Dictionary<Type, MediatorTypeMap> _mediatorTypeMaps = new Dictionary<Type, MediatorTypeMap>();
+        private readonly Dictionary<Type, MediatorTypeMap> _mediatorTypeMaps;
 
-        /// <summary>
-        /// Mutable because we add types as new expressions are translated.
-        /// </summary>
-        public void AddMediatorTypeMap(MediatorTypeMap mediatorTypeMap)
-            => _mediatorTypeMaps.Add(mediatorTypeMap.TargetType, mediatorTypeMap);
+        public MediatorMapper(IEnumerable<MediatorTypeMap> mediatorTypeMaps)
+        {
+            _mediatorTypeMaps = mediatorTypeMaps.ToDictionary(x => x.TargetType, x => x);
+        }
 
         internal Type GetMediatorType(Type targetType)
             => _mediatorTypeMaps[targetType].MediatorType;

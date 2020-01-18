@@ -1,7 +1,5 @@
 ﻿namespace ValueConversion.Tests
 {
-    using System;
-    using System.Collections.Generic;
     using FluentAssertions;
     using ValueConversion.Ef6;
     using Xunit;
@@ -11,17 +9,15 @@
         [Fact]
         public void MediatorTypeHasParameterlessCtor()
         {
-            var a = new Dictionary<Type, Type> { { typeof(string), typeof(PhoneNumber) } };
-            var cfg = new ConversionConfiguration
-            {
-                IsAllowedForColumn = x => true,
-            };
-            var mediatorTypeBuilder = new MediatorTypeBuilder(a, cfg);
+            var mediatorTypeBuilder = new MediatorTypeBuilder();
+            var targetType = typeof(EmptyType);
+            var graph = new TargetTypeGraph();
+            graph.AddNode(targetType);
+            var mediatorMapper = mediatorTypeBuilder.CreateMediatorTypes(graph);
 
-            var mediatorType = mediatorTypeBuilder.CreateMediatorType(typeof(EmptyType));
+            var mediatorType = mediatorMapper.GetMediatorType(targetType);
 
-            mediatorType.GetConstructors().Should().HaveCount(1);
-            mediatorType.Should().HaveConstructor(Type.EmptyTypes);
+            mediatorType.Should().HaveDefaultConstructor();
         }
 
         private class EmptyType

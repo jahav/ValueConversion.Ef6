@@ -21,7 +21,7 @@
             x => x.SetMethod != null && x.SetMethod.IsPublic && x.GetMethod != null && x.GetMethod.IsPublic;
 
         /// <summary>
-        /// Gets a recursion limit that detects endless cycles, e.g. when looking for a connected graph to translate.
+        /// Gets or sets a recursion limit that detects endless cycles, e.g. when looking for a connected graph to translate.
         /// First level is 0, once level is greater that MaxRecursion, throw.
         /// </summary>
         public int MaxRecursion { get; set;  } = 20;

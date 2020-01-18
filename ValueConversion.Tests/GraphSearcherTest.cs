@@ -36,7 +36,8 @@
 
             graph.Nodes.Should().ContainSingle()
                 .Which.Type.Should().Be(originType);
-            graph.Nodes.Single().ColumnProperties.Should().BeEquivalentTo(primitiveType);
+            graph.Nodes.Single().ColumnMembers
+                .Should().Equal(typeof(Outer).GetProperty(nameof(Outer.Primitive)));
         }
 
         [Fact]
