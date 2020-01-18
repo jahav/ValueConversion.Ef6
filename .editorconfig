@@ -21,3 +21,6 @@ dotnet_diagnostic.SA1309.severity = none
 
 # SA1611: Element parameters should be documented
 dotnet_diagnostic.SA1611.severity = none
+
+# SA1601: Partial elements should be documented
+dotnet_diagnostic.SA1601.severity = none
