@@ -12,7 +12,7 @@
     /// will be a primitive type (according to Edm), not domain type (e.g. <c>string</c>
     /// instead of <c>SerialNumber</c>).
     /// </summary>
-    public class MediatorTypeBuilder
+    public partial class MediatorTypeBuilder
     {
         private const string _assemblyName = "ValueConversion.Ef6.MediatorAssembly";
         private readonly ConversionConfiguration _configuration;
@@ -21,6 +21,7 @@
         /// List of custom typef for member, anything not found here is just passed through without type change.
         /// </summary>
         private readonly IReadOnlyDictionary<Type, Type> _typeConverters;
+
 
         public MediatorTypeBuilder(IReadOnlyDictionary<Type, Type> typeConverters, ConversionConfiguration configuration)
         {
@@ -38,7 +39,7 @@
             var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndCollect);
             var moduleBuilder = assemblyBuilder.DefineDynamicModule(assemblyName.Name);
 
-            var uniqueName = targetType.FullName + "Proxy";
+            var uniqueName = targetType.Namespace + ".«" + targetType.Name + "»";
             var typeBuilder = moduleBuilder.DefineType(uniqueName, TypeAttributes.Public);
 
             DefineDefaultConstructor(typeBuilder);

@@ -10,11 +10,20 @@
         /// This is heavily dependent on EF6, see allowed casts CLR types in <c>ExpressionConverter.GetCastTargetType</c>.
         /// For primitive types (that is not every type, e.g. ), see EF6 source <c>ClrProviderManifest.TryGetPrimitiveTypeKind</c> for a list of allowed types in EF6 as a column.
         /// </summary>
-        public Func<Type, bool> IsAllowedForColumn { get; set; } = x => true;
+        /// <remarks>
+        /// This has a preference, if this says it can be materialized, it is put into the mediator type.</remarks>
+        public Func<Type, bool> IsAllowedForColumn { get; set; } = x => x.IsPrimitive || x == typeof(string);
 
         /// <summary>
         /// Gets or sets a delegate that determines if a mediator should contain a propery with same name as the target.
         /// </summary>
-        public Func<PropertyInfo, bool> ShouldMediateTargetProperty { get; set; } = x => x.SetMethod != null && x.GetMethod != null;
+        public Func<PropertyInfo, bool> ShouldMediateTargetProperty { get; set; } =
+            x => x.SetMethod != null && x.SetMethod.IsPublic && x.GetMethod != null && x.GetMethod.IsPublic;
+
+        /// <summary>
+        /// Gets a recursion limit that detects endless cycles, e.g. when looking for a connected graph to translate.
+        /// First level is 0, once level is greater that MaxRecursion, throw.
+        /// </summary>
+        public int MaxRecursion { get; set;  } = 20;
     }
 }

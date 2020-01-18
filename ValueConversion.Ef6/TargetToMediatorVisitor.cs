@@ -50,12 +50,13 @@
                 if (node.Expression is UnaryExpression convertExpression
                     && convertExpression.NodeType == ExpressionType.Convert)
                 {
-                    return Expression.Bind(mediatorProperty, convertExpression.Operand);
+                    return Expression.Bind(mediatorProperty, Visit(convertExpression.Operand));
                 }
 
                 // No cast, so you can use expression directly
                 // TODO: Visit expression
-                return Expression.Bind(mediatorProperty, node.Expression);
+                var visitedTarget = Visit(node.Expression);
+                return Expression.Bind(mediatorProperty, visitedTarget);
             }
 
             return base.VisitMemberAssignment(node);

@@ -16,7 +16,7 @@
         public void ConvertTypeToMediator_WithNoPropertiesWorks()
         {
             Expression<Func<CustomerEntity, Address>> identity = customer => new Address();
-            AssertTargetToMediator(identity, "(CustomerEntity customer) => new AddressProxy()", _noCustomConverters);
+            AssertTargetToMediator(identity, "(CustomerEntity customer) => new «Address»()", _noCustomConverters);
         }
 
         [Fact]
@@ -25,10 +25,30 @@
             Expression<Func<CustomerEntity, Address>> identity = customer => new Address { Street = customer.WorkStreet };
             var result =
 @"
-(CustomerEntity customer) => new AddressProxy() {
+(CustomerEntity customer) => new «Address»() {
     Street = customer.WorkStreet
 }";
             AssertTargetToMediator(identity, result, _noCustomConverters);
+        }
+
+        [Fact]
+        public void NestedTargetTypes_AreTransformed()
+        {
+            Expression<Func<CustomerEntity, Customer>> nestedTypes = customer => new Customer
+            {
+                WorkAddress = new Address
+                {
+                    Street = customer.WorkStreet,
+                },
+            };
+            var result =
+@"
+(CustomerEntity customer) => new «Customer»() {
+    WorkAddress = new «Address»() {
+        Street = customer.WorkStreet
+    }
+}";
+            AssertTargetToMediator(nestedTypes, result, _noCustomConverters);
         }
 
         private void AssertTargetToMediator(Expression projection, string resultTargetToMediator, IReadOnlyDictionary<Type, Type> convertors)

@@ -15,10 +15,18 @@
             This is heavily dependent on EF6, see allowed casts CLR types in <c>ExpressionConverter.GetCastTargetType</c>.
             For primitive types (that is not every type, e.g. ), see EF6 source <c>ClrProviderManifest.TryGetPrimitiveTypeKind</c> for a list of allowed types in EF6 as a column.
             </summary>
+            <remarks>
+            This has a preference, if this says it can be materialized, it is put into the mediator type.</remarks>
         </member>
         <member name="P:ValueConversion.Ef6.ConversionConfiguration.ShouldMediateTargetProperty">
             <summary>
             Gets or sets a delegate that determines if a mediator should contain a propery with same name as the target.
+            </summary>
+        </member>
+        <member name="P:ValueConversion.Ef6.ConversionConfiguration.MaxRecursion">
+            <summary>
+            Gets a recursion limit that detects endless cycles, e.g. when looking for a connected graph to translate.
+            First level is 0, once level is greater that MaxRecursion, throw.
             </summary>
         </member>
         <member name="T:ValueConversion.Ef6.MaterializedTypesVisitor">
@@ -65,6 +73,29 @@
             Convert a property of the target type into a property of the mediator type.
             </summary>
             <param name="propertyInfo">A property of a target type.</param>
+        </member>
+        <member name="M:ValueConversion.Ef6.GraphSearcher.SearchGraph(System.Type)">
+            <summary>
+            Depth first search.
+            </summary>
+        </member>
+        <member name="T:ValueConversion.Ef6.TargetTypeGraph">
+            <summary>
+            This finds the graph, all nodes and edges that must be translated.
+            It doesn't do the translation, it only finds what must be translated.
+            </summary>
+        </member>
+        <member name="F:ValueConversion.Ef6.TargetTypeGraph._graph">
+            <summary>
+            Key is node, represented by type, value are directed graphs edges (name of member and type target).
+            Nodes should be translated. Edges can point either to a node or a <see cref="F:ValueConversion.Ef6.TargetTypeGraph._keep"/>.
+            </summary>
+        </member>
+        <member name="F:ValueConversion.Ef6.TargetTypeGraph._keep">
+            <summary>
+            Types that shouldn't be translated, e.g. <see cref="T:System.Int32"/>, <see cref="T:System.String"/>.
+            <see cref="F:ValueConversion.Ef6.TargetTypeGraph._graph"/> doesn't have nodes for these types, but edges point to them.
+            </summary>
         </member>
     </members>
 </doc>
