@@ -20,16 +20,15 @@
         internal Type GetMediatorType(Type targetType)
             => _mediatorTypeMaps[targetType].MediatorType;
 
-        internal MemberInfo ConvertToMediator(PropertyInfo propertyInfo)
+        internal MemberInfo ConvertToMediator(PropertyInfo targetProperty)
         {
-            var propertyType = propertyInfo.PropertyType;
-            var targetType = propertyInfo.ReflectedType;
+            var targetType = targetProperty.ReflectedType;
             if (!_mediatorTypeMaps.TryGetValue(targetType, out var mediatorMap))
             {
-                throw new InvalidOperationException($"Unable to find a mediator type map for property {targetType.Name}.{propertyInfo.Name}");
+                throw new InvalidOperationException($"Unable to find a mediator type map for property {targetType.Name}.{targetProperty.Name}");
             }
 
-            return mediatorMap.ConvertToMediator(propertyInfo);
+            return mediatorMap.ConvertToMediator(targetProperty);
         }
 
         internal bool IsTargetType(Type targetType)
