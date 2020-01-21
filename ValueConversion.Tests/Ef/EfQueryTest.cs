@@ -1,13 +1,8 @@
 ﻿namespace ValueConversion.Tests.Ef
 {
-    using System;
-    using System.Collections;
     using System.Collections.Generic;
-    using System.Data.Entity;
     using System.Data.SQLite;
     using System.Linq;
-    using System.Linq.Expressions;
-    using System.Reflection;
     using FluentAssertions;
     using ValueConversion.Ef6;
     using Xunit;
@@ -15,7 +10,7 @@
     public partial class EfQueryTest
     {
         [Fact]
-        public void Select()
+        public void SelectWithNamedType_IsProperlyMaterialized()
         {
             using (var connection = new SQLiteConnection("data source=:memory:"))
             {
@@ -41,143 +36,25 @@
                     ctx.Orders.Add(order);
                     ctx.SaveChanges();
 
-                    Expression<Func<OrderItem, A>> selectSourceToTarget = x => new A
-                    {
-                        Quantity = x.Quantity,
-                    };
-
                     var config = new ConversionConfiguration()
                     {
                         IsAllowedForColumn = x => x.IsValueType || x == typeof(string),
                     };
                     var searcher = new GraphSearcher(config);
-                    var graph = searcher.SearchGraph(typeof(A));
-
+                    var graph = searcher.SearchGraph(typeof(NamedTarget));
                     var mediatorMapper = new MediatorTypeBuilder().CreateMediatorTypes(graph);
-
-                    var targetToMediatorVisitor = new TargetToMediatorVisitor(mediatorMapper);
-                    var mediatorSelect = targetToMediatorVisitor.Visit(selectSourceToTarget);
-
-                    var targetRootType = typeof(A);
-                    var mediatorRootType = mediatorMapper.GetMediatorType(targetRootType);
-                    var mediatorList = SelectToList(ctx.OrderItems, mediatorSelect, mediatorRootType);
-
-                    mediatorList.Should().HaveCount(2);
-
-                    var mediatorToFuncType = typeof(Func<,>).MakeGenericType(mediatorRootType, targetRootType);
-                    var mediatorToFuncTypeExpression = typeof(Expression<>).MakeGenericType(mediatorToFuncType);
-
-                    var mediatorToTargetVisitor = new MediatorToTargetVisitor(mediatorMapper);
-                    object mediatorToTargetSelect = mediatorToTargetVisitor.Visit(selectSourceToTarget);
-
-                    var compileMethod = mediatorToFuncTypeExpression.GetMethod("Compile", Type.EmptyTypes);
-                    object mediatorToTargetFunc = compileMethod.Invoke(mediatorToTargetSelect, Array.Empty<object>());
-
-                    // public static IEnumerable<TResult> System.Linq.Enumerable.Select<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector);
-                    var enumerableSelect = GetGenericEnumerableSelectMethod();
-
-                    var genericEnumerableSelect = enumerableSelect.MakeGenericMethod(mediatorRootType, targetRootType);
-
-                    var targetEnumerable = (IEnumerable<A>)genericEnumerableSelect.Invoke(null, new object[] { mediatorList, mediatorToTargetFunc });
-                    var targetList = targetEnumerable.ToList();
+                    var result = ctx.OrderItems.ProjectToList(
+                        x => new NamedTarget
+                        {
+                            Quantity = x.Quantity,
+                        },
+                        mediatorMapper);
+                    result.Select(x => x.Quantity).Should().BeEquivalentTo(3, 5);
                 }
             }
         }
 
-        private static MethodInfo GetGenericToListMethod() => typeof(Enumerable).GetMethod(nameof(Enumerable.ToList));
-
-        private static MethodInfo GetGenericQueryableSelectMethod()
-        {
-            return typeof(Queryable)
-                .GetMethods(BindingFlags.Static | BindingFlags.Public)
-                .Where(m => m.Name == nameof(Queryable.Select))
-                .Where(m =>
-                {
-                    if (!m.IsGenericMethod)
-                    {
-                        return false;
-                    }
-
-                    var genericArguments = m.GetGenericArguments();
-                    if (genericArguments.Length != 2)
-                    {
-                        return false;
-                    }
-
-                    var methodParameters = m.GetParameters();
-                    if (methodParameters.Length != 2)
-                    {
-                        return false;
-                    }
-
-                    var sourceType = m.GetGenericArguments()[0];
-                    var resultType = m.GetGenericArguments()[1];
-                    var funcType = typeof(Func<,>).MakeGenericType(sourceType, resultType);
-                    var expressionType = typeof(Expression<>).MakeGenericType(funcType);
-
-                    if (methodParameters[1].ParameterType != expressionType)
-                    {
-                        return false;
-                    }
-
-                    return true;
-                }).Single();
-        }
-
-        private static MethodInfo GetGenericEnumerableSelectMethod()
-        {
-            return typeof(Enumerable)
-                .GetMethods(BindingFlags.Static | BindingFlags.Public)
-                .Where(m => m.Name == nameof(Enumerable.Select))
-                .Where(m =>
-                {
-                    if (!m.IsGenericMethod)
-                    {
-                        return false;
-                    }
-
-                    var genericArguments = m.GetGenericArguments();
-                    if (genericArguments.Length != 2)
-                    {
-                        return false;
-                    }
-
-                    var methodParameters = m.GetParameters();
-                    if (methodParameters.Length != 2)
-                    {
-                        return false;
-                    }
-
-                    var sourceType = m.GetGenericArguments()[0];
-                    var resultType = m.GetGenericArguments()[1];
-                    var funcType = typeof(Func<,>).MakeGenericType(sourceType, resultType);
-
-                    if (methodParameters[1].ParameterType != funcType)
-                    {
-                        return false;
-                    }
-
-                    return true;
-                }).Single();
-        }
-
-
-        private IList SelectToList<T>(DbSet<T> query, Expression mediatorSelect, Type mediatorRootType)
-            where T : class
-        {
-            var sourceType = typeof(T);
-            var resultType = mediatorRootType;
-
-            var genericSelectMethod = GetGenericQueryableSelectMethod().MakeGenericMethod(sourceType, resultType);
-            var mediatorSelectQuery = genericSelectMethod.Invoke(null, new object[] { query, mediatorSelect });
-
-            var toListMethod = GetGenericToListMethod();
-            var genericToListMethod = toListMethod.MakeGenericMethod(resultType);
-            var mediatorList = (IList)genericToListMethod.Invoke(null, new object[] { mediatorSelectQuery });
-            return mediatorList;
-        }
-
-        private class A
+        private class NamedTarget
         {
             public int Quantity { get; set; }
         }

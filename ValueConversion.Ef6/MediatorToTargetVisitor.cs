@@ -2,11 +2,8 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
-    using System.Text;
-    using System.Threading.Tasks;
 
     public class MediatorToTargetVisitor : ExpressionVisitor
     {
@@ -45,7 +42,7 @@
                 }
                 else
                 {
-                    Expression n = _root;
+                    Expression n = _root!;
                     foreach (var member in _memberStack)
                     {
                         n = Expression.PropertyOrField(n, member.Name);
