@@ -1,16 +1,36 @@
 ﻿namespace ValueConversion.Ef6
 {
     using System;
+    using System.Linq.Expressions;
 
-    public class ValueConverter
+    public abstract class ValueConverter
     {
-        private readonly Type _fromType;
-        private readonly Type _toType;
-
-        public ValueConverter(Type fromType, Type toType)
+        protected ValueConverter(
+            LambdaExpression convertToProviderExpression,
+            LambdaExpression convertFromProviderExpression)
         {
-            _fromType = fromType;
-            _toType = toType;
+            if (convertToProviderExpression.Parameters.Count != 1)
+            {
+                throw new ArgumentException($"The expressin must have one parameter.", nameof(convertToProviderExpression));
+            }
+
+            if (convertFromProviderExpression.Parameters.Count != 1)
+            {
+                throw new ArgumentException($"The expressin must have one parameter.", nameof(convertFromProviderExpression));
+            }
+
+            ConvertToProviderExpression = convertToProviderExpression;
+            ConvertFromProviderExpression = convertFromProviderExpression;
+            ModelClrType = convertFromProviderExpression.Body.Type;
+            ProviderClrType = convertToProviderExpression.Body.Type;
         }
+
+        public LambdaExpression ConvertToProviderExpression { get; }
+
+        public LambdaExpression ConvertFromProviderExpression { get; }
+
+        public Type ModelClrType { get; }
+
+        public Type ProviderClrType { get; }
     }
 }

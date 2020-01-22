@@ -100,6 +100,7 @@
     <Compile Include="Ef\OrderContext.cs" />
     <Compile Include="Ef\OrderItem.cs" />
     <Compile Include="Ef\Product.cs" />
+    <Compile Include="GraphSearcherConvertersTest.cs" />
     <Compile Include="SimpleIntegrationTest.cs" />
     <Compile Include="MaterializedTypesVisitorTest.cs" />
     <Compile Include="Customer.cs" />

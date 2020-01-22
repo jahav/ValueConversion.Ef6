@@ -86,6 +86,9 @@
 
             public Type Type { get; }
 
+            /// <summary>
+            /// Gets properties that are directly on the node, not navigation properties (represented by the edge).
+            /// </summary>
             public IReadOnlyCollection<MemberInfo> ColumnMembers { get; }
         }
 

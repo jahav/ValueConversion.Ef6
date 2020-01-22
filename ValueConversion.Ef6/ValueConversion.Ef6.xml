@@ -88,6 +88,11 @@
             <see cref="F:ValueConversion.Ef6.TargetTypeGraph._graph"/> doesn't have nodes for these types, but edges point to them.
             </summary>
         </member>
+        <member name="P:ValueConversion.Ef6.TargetTypeGraph.Node.ColumnMembers">
+            <summary>
+            Gets properties that are directly on the node, not navigation properties (represented by the edge).
+            </summary>
+        </member>
         <member name="M:ValueConversion.Ef6.ValueConversionExtensions.ProjectToList``2(System.Linq.IQueryable{``0},System.Linq.Expressions.Expression{System.Func{``0,``1}},ValueConversion.Ef6.MediatorMapper)">
             <summary>
             The extension method that adds a select as a last extension method and hydrates the result through proxy.
