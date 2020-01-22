@@ -104,3 +104,16 @@ var result = projectToAnonQuery.ToList().Select(selectExpression).ToList();
 ```
 
 and you are done (^____^)!
+
+
+# Roadmap
+## 1.0 scope
+* Properties, 
+* collections, 
+* custom types for a single property 
+## 1.0 out of scope
+* anonymous types (requires on the fly generation)
+* inheritance
+* polymorphism
+* fields
+

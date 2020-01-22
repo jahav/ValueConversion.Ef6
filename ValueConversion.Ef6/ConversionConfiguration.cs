@@ -3,7 +3,7 @@
     using System;
     using System.Reflection;
 
-    public class ConversionConfiguration
+    public partial class ConversionConfiguration
     {
         /// <summary>
         /// Gets or sets a delegate that determines if a CLR type can be used as an alias of a DB column type.
@@ -12,7 +12,7 @@
         /// </summary>
         /// <remarks>
         /// This has a preference, if this says it can be materialized, it is put into the mediator type.</remarks>
-        public Func<Type, bool> IsAllowedForColumn { get; set; } = x => x.IsPrimitive || x == typeof(string);
+        public Func<Type, bool> IsAllowedForColumn { get; set; } = TypeHelper.MemberTypeSupportedByEf;
 
         /// <summary>
         /// Gets or sets a delegate that determines if a mediator should contain a propery with same name as the target.
@@ -24,6 +24,6 @@
         /// Gets or sets a recursion limit that detects endless cycles, e.g. when looking for a connected graph to translate.
         /// First level is 0, once level is greater that MaxRecursion, throw.
         /// </summary>
-        public int MaxRecursion { get; set;  } = 20;
+        public int MaxRecursion { get; set; } = 20;
     }
 }

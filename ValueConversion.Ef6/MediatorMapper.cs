@@ -18,7 +18,14 @@
         }
 
         internal Type GetMediatorType(Type targetType)
-            => _mediatorTypeMaps[targetType].MediatorType;
+        {
+            if (!_mediatorTypeMaps.TryGetValue(targetType, out var value))
+            {
+                throw new KeyNotFoundException($"Unable to find a mediator type for {targetType}. Make sure it was found by the searcher and a mediator type was created.");
+            }
+
+            return value.MediatorType;
+        }
 
         internal MemberInfo ConvertToMediator(PropertyInfo targetProperty)
         {
